@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Manajemen Nilai & Mata Kuliah</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background-color: #f4f6f9; display: flex; }
+        .sidebar { width: 250px; background-color: #343a40; color: white; min-height: 100vh; padding: 20px; box-sizing: border-box; }
+        .sidebar h3 { text-align: center; margin-bottom: 30px; }
+        .sidebar a { display: block; color: #c2c7d0; padding: 12px; text-decoration: none; border-radius: 4px; margin-bottom: 5px; }
+        .sidebar a:hover, .sidebar a.current { background-color: #007bff; color: white; }
+        .content { flex: 1; padding: 30px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #dee2e6; padding-bottom: 10px; margin-bottom: 20px; }
+        .box { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .form-group { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        input, select { padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .btn { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; }
+        .btn-success { background-color: #28a745; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-top: 10px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6; }
+        th { background-color: #17a2b8; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h3>Akademik Cloud</h3>
+    <p style="text-align: center; font-size: 14px; color: #a8ffb2;">Role: {{ session['role'] }}</p>
+    <hr style="border-color: #4f5962;">
+    <a href="/dashboard">Dashboard</a>
+    <a href="/mahasiswa">Data Mahasiswa</a>
+    <a href="/nilai" class="current">Nilai & Mata Kuliah</a>
+    <a href="/logout" style="color: #ff6b6b; margin-top: 50px;">Logout</a>
+</div>
+
+<div class="content">
+    <div class="header">
+        <h2>Manajemen Nilai & Mata Kuliah</h2>
+    </div>
+
+    {% if session['role'] in ['admin', 'dosen'] %}
+    <div class="box">
+        <h3>Tambah Mata Kuliah Baru</h3>
+        <form action="/nilai/tambah-mk" method="POST" class="form-group">
+            <input type="text" name="kode_mk" placeholder="Kode MK (Contoh: INF101)" required>
+            <input type="text" name="nama_mk" placeholder="Nama Mata Kuliah" required>
+            <input type="number" name="sks" placeholder="SKS" min="1" max="6" required>
+            <button type="submit" class="btn btn-success">Simpan MK</button>
+        </form>
+    </div>
+
+    <div class="box">
+        <h3>Input Nilai Mahasiswa</h3>
+        <form action="/nilai/tambah-nilai" method="POST" class="form-group">
+            <input type="text" name="nim" placeholder="NIM Mahasiswa" required>
+            <input type="text" name="kode_mk" placeholder="Kode MK" required>
+            <input type="number" name="nilai_angka" placeholder="Nilai Angka (0-100)" min="0" max="100" required>
+            <select name="nilai_huruf" required>
+                <option value="">-- Pilih Nilai Huruf --</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+                <option value="E">E</option>
+            </select>
+            <button type="submit" class="btn btn-success">Simpan Nilai</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="box">
+        <h3>Daftar Transkrip Nilai Real-time Cloud</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>NIM</th>
+                    <th>Nama Mahasiswa</th>
+                    <th>Mata Kuliah</th>
+                    <th>SKS</th>
+                    <th>Nilai Angka</th>
+                    <th>Nilai Huruf</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for n in nilai_list %}
+                <tr>
+                    <td>{{ n['nim'] }}</td>
+                    <td>{{ n['nama_mahasiswa'] }}</td>
+                    <td>{{ n['nama_mk'] }}</td>
+                    <td>{{ n['sks'] }}</td>
+                    <td>{{ n['nilai_angka'] }}</td>
+                    <td><strong>{{ n['nilai_huruf'] }}</strong></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: #999;">Belum ada data nilai di cloud database.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
