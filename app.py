@@ -2,8 +2,8 @@ import csv
 from collections import Counter
 from flask import Flask, render_template, request, redirect, url_for, session, make_response
 from werkzeug.security import generate_password_hash, check_password_hash
-# Kita panggil fungsi khusus penembak API Supabase dari config.py
-from config import query_supabase_api, supabase_client 
+# Import fungsi buatan kita dari config.py
+from config import query_supabase_api, get_supabase_client
 
 app = Flask(__name__)
 app.secret_key = 'kunci_rahasia_akademik_cloud'
@@ -26,7 +26,7 @@ def login():
         users_data = query_supabase_api('users', filters={'username': username})
         user = users_data[0] if users_data else None
 
-        # validasi password (mendukung teks biasa atau hash)
+        # Validasi password (mendukung teks biasa atau hash)
         if user and (user['password'] == password or check_password_hash(user['password'], password)):
             session['username'] = user['username']
             session['role'] = user['role']
@@ -86,6 +86,7 @@ def tambah_mahasiswa():
     if nim and nama and jurusan and angkatan:
         try:
             data_insert = {'nim': nim, 'nama': nama, 'jurusan': jurusan, 'angkatan': int(angkatan)}
+            supabase_client = get_supabase_client()
             supabase_client.table('mahasiswa').insert(data_insert).execute()
         except Exception as e:
             print(f"Gagal tambah mahasiswa: {e}")
@@ -98,6 +99,7 @@ def hapus_mahasiswa(nim):
         return 'Akses Ditolak!', 403
 
     try:
+        supabase_client = get_supabase_client()
         supabase_client.table('nilai').delete().eq('nim', nim).execute()
         supabase_client.table('mahasiswa').delete().eq('nim', nim).execute()
     except Exception as e:
@@ -160,6 +162,7 @@ def tambah_mk():
     if kode_mk and nama_mk and sks:
         try:
             data_insert = {'kode_mk': kode_mk, 'nama_mk': nama_mk, 'sks': int(sks)}
+            supabase_client = get_supabase_client()
             supabase_client.table('mata_kuliah').insert(data_insert).execute()
         except Exception as e:
             print(f"Gagal tambah mata kuliah: {e}")
@@ -184,6 +187,7 @@ def tambah_nilai():
                 'nilai_angka': int(nilai_angka),
                 'nilai_huruf': nilai_huruf,
             }
+            supabase_client = get_supabase_client()
             supabase_client.table('nilai').insert(data_insert).execute()
         except Exception as e:
             print(f"Gagal tambah nilai: {e}")
