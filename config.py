@@ -1,15 +1,20 @@
 # config.py
-import os
-import psycopg2
-from psycopg2.extras import RealDictCursor
+from supabase import create_client
 
-# sslmode diganti menjadi disable agar bypass verifikasi sertifikat di server cloud Vercel
-DATABASE_URL = "postgresql://postgres:bZHVYNNibi5r9Mie@db.qwokowmwcfldqwjxpbfs.supabase.co:6543/postgres?sslmode=disable"
+# Silakan lengkapi data url dan anon public key dari dashboard Supabase-mu bro
+SUPABASE_URL = "https://qwokowmwcfldqwjxpbfs.supabase.co"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3b2tvd213Y2ZsZHF3anhwYmZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzOTczMzUsImV4cCI6MjA5Nzk3MzMzNX0.Mros9ocmjz1BSlvFdx1aJf8vZX-EE_ZenTQmbe4ehdk"
 
-def get_db_connection():
+supabase_client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+def query_supabase_api(table_name, filters=None):
     try:
-        conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor, connect_timeout=10)
-        return conn
+        query = supabase_client.table(table_name).select("*")
+        if filters:
+            for key, value in filters.items():
+                query = query.eq(key, value)
+        res = query.execute()
+        return res.data
     except Exception as e:
-        print(f"Gagal konek ke database cloud: {e}")
-        return None
+        print(f"Error fetching {table_name}: {e}")
+        return []
